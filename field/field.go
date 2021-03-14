@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
-	"os/exec"
+	"strconv"
+
+	"github.com/inancgumus/screen"
+
 	"rabbits_wolfs/animals"
 	"rabbits_wolfs/movement"
-	"strconv"
 )
 
-const Size = 35
-
-var drawCh chan field
-var finishDraw chan bool
+var (
+	drawCh     chan field
+	finishDraw chan bool
+	screenSize = -1
+)
 
 type (
 	Field interface {
@@ -141,8 +143,10 @@ func (f field) Draw() chan bool {
 }
 
 func (f field) String() string {
-	var buf bytes.Buffer
-	var b [3]byte
+	var (
+		buf bytes.Buffer
+		b   [3]byte
+	)
 	for x, row := range f {
 		for y, animal := range row {
 			b[0] = byte('-')
@@ -180,16 +184,20 @@ func (f field) Each(upLeftPos movement.Position, botRightPos movement.Position, 
 }
 
 func draw(drawCh chan field, finishDraw chan bool) {
+	screen.Clear()
 	for fld := range drawCh {
-		cmd := exec.Command("cmd", "/c", "cls") //Windows example, its tested
-		cmd.Stdout = os.Stdout
-		err := cmd.Run()
-		if err != nil {
-			panic(err)
-		}
+		screen.MoveTopLeft()
 		fmt.Print(fld)
 		finishDraw <- true
 	}
+}
+
+func ScreenSize() int {
+	if screenSize == -1 {
+		xSize, ySize := screen.Size()
+		screenSize = int(math.Min(float64(xSize/3), float64(ySize-1)))
+	}
+	return screenSize
 }
 
 type field [][]animals.Animal

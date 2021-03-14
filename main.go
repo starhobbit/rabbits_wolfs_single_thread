@@ -21,6 +21,11 @@ var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 func main() {
+	var (
+		fieldSize    int
+		rabbitsCount int
+		wolfsCount   int
+	)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
 	if *cpuprofile != "" {
@@ -44,31 +49,27 @@ func main() {
 		data4Loop.time2Live = Epoch
 	}
 
-	fmt.Print("field size (", field.Size, "):")
-	var fieldSize int
+	fmt.Print("field size (", field.ScreenSize(), "):")
 	fmt.Scanln(&fieldSize)
 	if fieldSize == 0 {
-		fieldSize = field.Size
+		fieldSize = field.ScreenSize()
 	}
 	fmt.Println("field size'll be ", fieldSize, "x", fieldSize, "(", fieldSize*fieldSize, ")")
 
-	data4Loop.field = field.NewField(fieldSize)
-
 	fmt.Print("Rabbits start count (", animals.RabbitDefCount, "):")
-	var rabbitsCount int
 	fmt.Scanln(&rabbitsCount)
 	if rabbitsCount == 0 {
 		rabbitsCount = animals.RabbitDefCount
 	}
 
 	fmt.Print("Wolfs start count (", animals.WolfDefCount, "):")
-	var wolfsCount int
 	fmt.Scanln(&wolfsCount)
 	if wolfsCount == 0 {
 		wolfsCount = animals.WolfDefCount
 	}
 
 	rand.Seed(time.Now().UnixNano())
+	data4Loop.field = field.NewField(fieldSize)
 	data4Loop.animals = []animals.Animals{animals.NewRabbits(rabbitsCount), animals.NewWolfs(wolfsCount)}
 	start := time.Now()
 	loop(data4Loop)

@@ -12,8 +12,8 @@ import (
 )
 
 func move(animal animals.Animal, field field.Field, direction movement.MoveDirection, moveType string) {
-	oldPos := animal.Position()
 	var newPos movement.Position
+	oldPos := animal.Position()
 	switch moveType {
 	case animals.MoveStep:
 		newPos = animal.Step(direction, field.GetSize())
@@ -54,7 +54,7 @@ func breed(creatures animals.Animals, index int, fld field.Field) {
 		Y: father.Position().Y + 1,
 	},
 		func(mother animals.Animal) {
-			if mother == nil || !mother.CanGiveLife() || rand.Intn(10000) < 5000 {
+			if mother == nil || !mother.CanGiveLife() || rand.Intn(99) < 49 {
 				return
 			}
 			animalCount := int(mother.RandomBirths())
@@ -83,10 +83,10 @@ func kill(creatures animals.Animals, index int, field field.Field) {
 func workAnimal(creatures animals.Animals, index int, field field.Field) {
 	breed(creatures, index, field)
 	moveRand(creatures.Animal(index), field)
-	//ch <- true
 }
 
 func workAnimals(creatures animals.Animals, field field.Field) {
+	// use pointer because length can become shorter inside for loop
 	length := creatures.Len()
 	for i := 0; i < *length; i++ {
 		if !checkLife(creatures, i, field) {
@@ -106,7 +106,7 @@ func workOfLoop(data *loopData) {
 	for _, creatures := range data.animals {
 		workAnimals(creatures, data.field)
 	}
-	if data.field.GetSize() <= 35 {
+	if data.field.GetSize() <= field.ScreenSize() {
 		drawCh := data.field.Draw()
 		timer := time.NewTimer(time.Second / 10)
 		for !(tickFinished && drawFinished) {
@@ -135,7 +135,7 @@ func loop(data *loopData) {
 		start := time.Now()
 		workOfLoop(data)
 		since := time.Since(start)
-		if data.field.GetSize() > 35 && since > 0 {
+		if data.field.GetSize() > field.ScreenSize() && since > 0 {
 			fmt.Println(since)
 		}
 		curTotalCount := 0
