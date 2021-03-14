@@ -6,11 +6,11 @@ const RabbitDefCount = 50
 const RabbitType = "rabbit"
 
 func NewRabbits(startCount int) *animals {
-	return NewAnimals(startCount, newRabbit, RabbitType)
+	return newAnimals(startCount, newRabbit, RabbitType)
 }
 
-func newRabbit() *animal {
-	return &animal{
+func newRabbit() *Animal {
+	return &Animal{
 		speed: speed{
 			run:     4,
 			step:    2,

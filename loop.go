@@ -11,7 +11,21 @@ import (
 	"rabbits_wolfs/movement"
 )
 
-func move(animal animals.Animal, field field.Field, direction movement.MoveDirection, moveType string) {
+type (
+	Field interface {
+		Move(*animals.Animal, movement.Position, movement.Position)
+		SpawnAnimals(field.Animals)
+		Spawn(*animals.Animal, movement.Position)
+		GetRandomEmpty(int) []movement.Position
+		GetRandomEmptyNear(movement.Position, uint8, int) []movement.Position
+		SetCellByPos(movement.Position, *animals.Animal)
+		GetSize() int
+		Draw() chan bool
+		Each(movement.Position, movement.Position, func(*animals.Animal))
+	}
+)
+
+func move(animal *animals.Animal, field Field, direction movement.MoveDirection, moveType string) {
 	var newPos movement.Position
 	oldPos := animal.Position()
 	switch moveType {
@@ -35,13 +49,13 @@ func getRandomMoveType() string {
 	return getMoveTypes()[rand.Intn(len(getMoveTypes()))]
 }
 
-func moveRand(animal animals.Animal, field field.Field) {
+func moveRand(animal *animals.Animal, field Field) {
 	var direction movement.MoveDirection
 	direction.Random()
 	move(animal, field, direction, getRandomMoveType())
 }
 
-func breed(creatures animals.Animals, index int, fld field.Field) {
+func breed(creatures animals.Animals, index int, fld Field) {
 	father := creatures.Animal(index)
 	if !father.CanMakeLife() {
 		return
@@ -53,7 +67,7 @@ func breed(creatures animals.Animals, index int, fld field.Field) {
 		X: father.Position().X + 1,
 		Y: father.Position().Y + 1,
 	},
-		func(mother animals.Animal) {
+		func(mother *animals.Animal) {
 			if mother == nil || !mother.CanGiveLife() || rand.Intn(99) < 49 {
 				return
 			}
@@ -66,7 +80,7 @@ func breed(creatures animals.Animals, index int, fld field.Field) {
 		})
 }
 
-func checkLife(creatures animals.Animals, index int, field field.Field) bool {
+func checkLife(creatures animals.Animals, index int, field Field) bool {
 	if creatures.Animal(index).Dies() {
 		kill(creatures, index, field)
 		return false
@@ -75,17 +89,17 @@ func checkLife(creatures animals.Animals, index int, field field.Field) bool {
 	return true
 }
 
-func kill(creatures animals.Animals, index int, field field.Field) {
+func kill(creatures animals.Animals, index int, field Field) {
 	field.SetCellByPos(creatures.Animal(index).Position(), nil)
 	creatures.Remove(index)
 }
 
-func workAnimal(creatures animals.Animals, index int, field field.Field) {
+func workAnimal(creatures animals.Animals, index int, field Field) {
 	breed(creatures, index, field)
 	moveRand(creatures.Animal(index), field)
 }
 
-func workAnimals(creatures animals.Animals, field field.Field) {
+func workAnimals(creatures animals.Animals, field Field) {
 	// use pointer because length can become shorter inside for loop
 	length := creatures.Len()
 	for i := 0; i < *length; i++ {
@@ -108,7 +122,7 @@ func workOfLoop(data *loopData) {
 	}
 	if data.field.GetSize() <= field.ScreenSize() {
 		drawCh := data.field.Draw()
-		timer := time.NewTimer(time.Second / 10)
+		timer := time.NewTimer(time.Second / 30)
 		for !(tickFinished && drawFinished) {
 			select {
 			case <-drawCh:
@@ -166,6 +180,6 @@ func loop(data *loopData) {
 
 type loopData struct {
 	animals   []animals.Animals
-	field     field.Field
+	field     Field
 	time2Live int
 }

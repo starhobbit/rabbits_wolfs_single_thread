@@ -22,7 +22,7 @@ type (
 		min uint8
 		max uint8
 	}
-	animal struct {
+	Animal struct {
 		position    movement.Position
 		speed       speed
 		typeOf      string
@@ -38,74 +38,74 @@ type (
 	}
 )
 
-func (a *animal) Dies() bool {
+func (a *Animal) Dies() bool {
 	return a.age == a.deathAge
 }
 
-func (a *animal) Run(direction movement.MoveDirection, max int) movement.Position {
+func (a *Animal) Run(direction movement.MoveDirection, max int) movement.Position {
 	return a.position.Move(direction, a.speed.run, max)
 }
 
-func (a *animal) Step(direction movement.MoveDirection, max int) movement.Position {
+func (a *Animal) Step(direction movement.MoveDirection, max int) movement.Position {
 	return a.position.Move(direction, a.speed.step, max)
 }
 
-func (a *animal) Stealth(direction movement.MoveDirection, max int) movement.Position {
+func (a *Animal) Stealth(direction movement.MoveDirection, max int) movement.Position {
 	return a.position.Move(direction, a.speed.stealth, max)
 }
 
-func (a *animal) isMale() bool {
+func (a *Animal) isMale() bool {
 	return a.sex == SexMale
 }
 
-func (a *animal) isFemale() bool {
+func (a *Animal) isFemale() bool {
 	return a.sex == SexFemale
 }
 
-func (a *animal) RandomBirths() uint8 {
+func (a *Animal) RandomBirths() uint8 {
 	if a.isMale() {
 		panic("Male can't ")
 	}
 	return uint8(rand.Intn(int(a.maxBirths-a.minBirths)) + int(a.minBirths))
 }
 
-func (a *animal) CanMakeLife() bool {
+func (a *Animal) CanMakeLife() bool {
 	return a.isMale() && a.inBreedAge()
 }
 
-func (a *animal) CanGiveLife() bool {
+func (a *Animal) CanGiveLife() bool {
 	return a.isFemale() && a.inBreedAge()
 }
 
-func (a *animal) inBreedAge() bool {
+func (a *Animal) inBreedAge() bool {
 	return a.age >= a.breedAge.min && a.age <= a.breedAge.max
 }
 
-func (a *animal) Type() string {
+func (a *Animal) Type() string {
 	return a.typeOf
 }
 
-func (a *animal) MakeOlder() {
+func (a *Animal) MakeOlder() {
 	a.age++
 }
 
-func (a *animal) SetPosition(position movement.Position) {
+func (a *Animal) SetPosition(position movement.Position) {
 	a.position = position
 }
 
-func (a *animal) Position() movement.Position {
+func (a *Animal) Position() movement.Position {
 	return a.position
 }
 
-func (a *animal) Age() uint8 {
+func (a *Animal) Age() uint8 {
 	return a.age
 }
 
-func (a *animal) BirthRadius() uint8 {
+func (a *Animal) BirthRadius() uint8 {
 	return a.birthRadius
 }
 
-type Animal interface {
+/*type Animal interface {
 	Position() movement.Position
 	CanGiveLife() bool
 	SetPosition(movement.Position)
@@ -118,4 +118,4 @@ type Animal interface {
 	MakeOlder()
 	Type() string
 	Dies() bool
-}
+}*/

@@ -20,27 +20,21 @@ var (
 )
 
 type (
-	Field interface {
-		Move(animals.Animal, movement.Position, movement.Position)
-		SpawnAnimals(animals.Animals)
-		Spawn(animals.Animal, movement.Position)
-		GetRandomEmpty(int) []movement.Position
-		GetRandomEmptyNear(movement.Position, uint8, int) []movement.Position
-		SetCellByPos(movement.Position, animals.Animal)
-		GetSize() int
-		Draw() chan bool
-		Each(movement.Position, movement.Position, func(animals.Animal))
+	Animals interface {
+		StartCount() int
+		NewAnimal() *animals.Animal
+		Append(animal *animals.Animal)
 	}
 )
 
-func (f field) Move(animal animals.Animal, oldPos movement.Position, newPos movement.Position) {
+func (f field) Move(animal *animals.Animal, oldPos movement.Position, newPos movement.Position) {
 	if f.empty(newPos) && oldPos != newPos {
 		f.SetCellByPos(oldPos, nil)
 		f.Spawn(animal, newPos)
 	}
 }
 
-func (f field) SpawnAnimals(creatures animals.Animals) {
+func (f field) SpawnAnimals(creatures Animals) {
 	var animalCount int
 	animalCount = creatures.StartCount()
 	positions := f.GetRandomEmpty(animalCount)
@@ -51,7 +45,7 @@ func (f field) SpawnAnimals(creatures animals.Animals) {
 	}
 }
 
-func (f field) Spawn(animal animals.Animal, position movement.Position) {
+func (f field) Spawn(animal *animals.Animal, position movement.Position) {
 	animal.SetPosition(position)
 	f.SetCellByPos(animal.Position(), animal)
 }
@@ -110,11 +104,11 @@ func (f field) GetRandomEmptyNear(parentPos movement.Position, radius uint8, cou
 	return resPositions
 }
 
-func (f field) getCellByPos(pos movement.Position) animals.Animal {
+func (f field) getCellByPos(pos movement.Position) *animals.Animal {
 	return f[pos.X][pos.Y]
 }
 
-func (f field) SetCellByPos(pos movement.Position, animal animals.Animal) {
+func (f field) SetCellByPos(pos movement.Position, animal *animals.Animal) {
 	f[pos.X][pos.Y] = animal
 }
 
@@ -122,15 +116,15 @@ func (f field) empty(position movement.Position) bool {
 	return f.getCellByPos(position) == nil
 }
 
-func NewField(size int) Field {
+func NewField(size int) *field {
 	f := make(field, size)
 	for i := range f {
-		f[i] = make([]animals.Animal, size)
+		f[i] = make([]*animals.Animal, size)
 	}
 	drawCh = make(chan field)
 	finishDraw = make(chan bool)
 	go draw(drawCh, finishDraw)
-	return f
+	return &f
 }
 
 func (f field) GetSize() int {
@@ -175,7 +169,7 @@ func (f field) String() string {
 	return buf.String()
 }
 
-func (f field) Each(upLeftPos movement.Position, botRightPos movement.Position, fu func(animal animals.Animal)) {
+func (f field) Each(upLeftPos movement.Position, botRightPos movement.Position, fu func(animal *animals.Animal)) {
 	for _, row := range f[movement.FixPos(upLeftPos.X, f.GetSize()):movement.FixPos(botRightPos.X, f.GetSize())] {
 		for _, animal := range row[movement.FixPos(upLeftPos.Y, f.GetSize()):movement.FixPos(botRightPos.Y, f.GetSize())] {
 			fu(animal)
@@ -200,4 +194,4 @@ func ScreenSize() int {
 	return screenSize
 }
 
-type field [][]animals.Animal
+type field [][]*animals.Animal

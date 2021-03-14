@@ -6,11 +6,11 @@ const WolfDefCount = 40
 const WolfType = "wolf"
 
 func NewWolfs(startCount int) *animals {
-	return NewAnimals(startCount, newWolf, WolfType)
+	return newAnimals(startCount, newWolf, WolfType)
 }
 
-func newWolf() *animal {
-	return &animal{
+func newWolf() *Animal {
+	return &Animal{
 		speed: speed{
 			run:     3,
 			step:    2,
