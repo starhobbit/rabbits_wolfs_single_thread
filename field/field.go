@@ -121,9 +121,11 @@ func NewField(size int) *field {
 	for i := range f {
 		f[i] = make([]*animals.Animal, size)
 	}
-	drawCh = make(chan field)
-	finishDraw = make(chan bool)
-	go draw(drawCh, finishDraw)
+	if size <= ScreenSize() {
+		drawCh = make(chan field)
+		finishDraw = make(chan bool)
+		go draw(drawCh, finishDraw)
+	}
 	return &f
 }
 

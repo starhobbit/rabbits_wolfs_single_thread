@@ -138,19 +138,25 @@ func loop(data *loopData) {
 	maxCount := make(map[string]int)
 	startCount := make(map[string]int)
 	totalCount := make(map[string]int)
+
 	for _, creatures := range data.animals {
+		start := time.Now()
 		data.field.SpawnAnimals(creatures)
 		maxCount[creatures.Type()] = creatures.Count()
 		startCount[creatures.Type()] = creatures.Count()
+		since := time.Since(start)
+		if data.field.GetSize() > field.ScreenSize() && since > 0 {
+			fmt.Println("spawn ", creatures.Type(), " : ", since)
+		}
 	}
 	finishMessage := "Epoch Finished!!! Max count: "
-
-	for i := 0; i < data.time2Live; i++ {
+	i := 0
+	for ; i < data.time2Live; i++ {
 		start := time.Now()
 		workOfLoop(data)
 		since := time.Since(start)
 		if data.field.GetSize() > field.ScreenSize() && since > 0 {
-			fmt.Println(since)
+			fmt.Println("loop: ", since)
 		}
 		curTotalCount := 0
 		for _, creatures := range data.animals {
@@ -175,6 +181,8 @@ func loop(data *loopData) {
 		startCount,
 		" Total count: ",
 		totalCount,
+		" Iterations: ",
+		i,
 	)
 }
 
