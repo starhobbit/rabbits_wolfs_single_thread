@@ -4,106 +4,107 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	. "rabbits_wolfs/animals"
-	. "rabbits_wolfs/field"
-	. "rabbits_wolfs/movement"
 	"time"
+
+	"rabbits_wolfs/animals"
+	"rabbits_wolfs/field"
+	"rabbits_wolfs/movement"
 )
 
-func move(anml Animal, field Field, direction MoveDirection, moveType string) {
-	oldPos := anml.GetPosition()
-	var newPos Position
+func move(animal animals.Animal, field field.Field, direction movement.MoveDirection, moveType string) {
+	oldPos := animal.Position()
+	var newPos movement.Position
 	switch moveType {
-	case MoveStep:
-		newPos = anml.Step(direction, field.GetSize())
-	case MoveRun:
-		newPos = anml.Run(direction, field.GetSize())
-	case MoveStealth:
-		newPos = anml.Stealth(direction, field.GetSize())
+	case animals.MoveStep:
+		newPos = animal.Step(direction, field.GetSize())
+	case animals.MoveRun:
+		newPos = animal.Run(direction, field.GetSize())
+	case animals.MoveStealth:
+		newPos = animal.Stealth(direction, field.GetSize())
 	default:
 		panic("Unknown moveType")
 	}
-	field.Move(anml, oldPos, newPos)
+	field.Move(animal, oldPos, newPos)
 }
 
 func getMoveTypes() []string {
-	return []string{MoveRun, MoveStep, MoveStealth}
+	return []string{animals.MoveRun, animals.MoveStep, animals.MoveStealth}
 }
 
 func getRandomMoveType() string {
 	return getMoveTypes()[rand.Intn(len(getMoveTypes()))]
 }
 
-func moveRand(animal Animal, field Field) {
-	var direction MoveDirection
+func moveRand(animal animals.Animal, field field.Field) {
+	var direction movement.MoveDirection
 	direction.Random()
 	move(animal, field, direction, getRandomMoveType())
 }
 
-func breed(animals Animals, index int, fld Field) {
-	father := animals.GetAnimal(index)
+func breed(creatures animals.Animals, index int, fld field.Field) {
+	father := creatures.Animal(index)
 	if !father.CanMakeLife() {
 		return
 	}
-	fld.Each(Position{
-		X: father.GetPosition().X - 1,
-		Y: father.GetPosition().Y - 1,
-	}, Position{
-		X: father.GetPosition().X + 1,
-		Y: father.GetPosition().Y + 1,
+	fld.Each(movement.Position{
+		X: father.Position().X - 1,
+		Y: father.Position().Y - 1,
+	}, movement.Position{
+		X: father.Position().X + 1,
+		Y: father.Position().Y + 1,
 	},
-		func(mother Animal) {
+		func(mother animals.Animal) {
 			if mother == nil || !mother.CanGiveLife() || rand.Intn(10000) < 5000 {
 				return
 			}
-			animalCount := int(mother.GetRandomBirths())
-			for _, newPos := range fld.GetRandomEmptyNear(mother.GetPosition(), mother.GetBirthRadius(), animalCount) {
-				animal := animals.NewAnimal()
-				animals.Append(animal)
+			animalCount := int(mother.RandomBirths())
+			for _, newPos := range fld.GetRandomEmptyNear(mother.Position(), mother.BirthRadius(), animalCount) {
+				animal := creatures.NewAnimal()
+				creatures.Append(animal)
 				fld.Spawn(animal, newPos)
 			}
 		})
 }
 
-func checkLife(animals Animals, index int, field Field) bool {
-	if animals.GetAnimal(index).Dies() {
-		kill(animals, index, field)
+func checkLife(creatures animals.Animals, index int, field field.Field) bool {
+	if creatures.Animal(index).Dies() {
+		kill(creatures, index, field)
 		return false
 	}
-	animals.GetAnimal(index).MakeOlder()
+	creatures.Animal(index).MakeOlder()
 	return true
 }
 
-func kill(animals Animals, index int, field Field) {
-	field.SetCellByPos(animals.GetAnimal(index).GetPosition(), nil)
-	animals.Remove(index)
+func kill(creatures animals.Animals, index int, field field.Field) {
+	field.SetCellByPos(creatures.Animal(index).Position(), nil)
+	creatures.Remove(index)
 }
 
-func workAnimal(animals Animals, index int, field Field) {
-	breed(animals, index, field)
-	moveRand(animals.GetAnimal(index), field)
+func workAnimal(creatures animals.Animals, index int, field field.Field) {
+	breed(creatures, index, field)
+	moveRand(creatures.Animal(index), field)
 	//ch <- true
 }
 
-func workAnimals(animals Animals, field Field) {
-	lngth := animals.Len()
-	for i := 0; i < *lngth; i++ {
-		if !checkLife(animals, i, field) {
+func workAnimals(creatures animals.Animals, field field.Field) {
+	length := creatures.Len()
+	for i := 0; i < *length; i++ {
+		if !checkLife(creatures, i, field) {
 			i--
-			if i >= *lngth-1 {
+			if i >= *length-1 {
 				return
 			}
 			continue
 		}
-		workAnimal(animals, i, field)
+		workAnimal(creatures, i, field)
 	}
 }
 
 func workOfLoop(data *loopData) {
 	tickFinished := false
 	drawFinished := false
-	for _, animals := range data.animals {
-		workAnimals(animals, data.field)
+	for _, creatures := range data.animals {
+		workAnimals(creatures, data.field)
 	}
 	if data.field.GetSize() <= 35 {
 		drawCh := data.field.Draw()
@@ -123,10 +124,10 @@ func loop(data *loopData) {
 	maxCount := make(map[string]int)
 	startCount := make(map[string]int)
 	totalCount := make(map[string]int)
-	for _, animals := range data.animals {
-		data.field.SpawnAnimals(animals)
-		maxCount[animals.GetType()] = animals.GetCount()
-		startCount[animals.GetType()] = animals.GetCount()
+	for _, creatures := range data.animals {
+		data.field.SpawnAnimals(creatures)
+		maxCount[creatures.Type()] = creatures.Count()
+		startCount[creatures.Type()] = creatures.Count()
 	}
 	finishMessage := "Epoch Finished!!! Max count: "
 
@@ -138,10 +139,10 @@ func loop(data *loopData) {
 			fmt.Println(since)
 		}
 		curTotalCount := 0
-		for _, animals := range data.animals {
-			curCount := animals.GetCount()
+		for _, creatures := range data.animals {
+			curCount := creatures.Count()
 			curTotalCount += curCount
-			maxCount[animals.GetType()] = int(math.Max(float64(maxCount[animals.GetType()]), float64(curCount)))
+			maxCount[creatures.Type()] = int(math.Max(float64(maxCount[creatures.Type()]), float64(curCount)))
 		}
 		if curTotalCount == 0 {
 			finishMessage = "All died!!! Max count: "
@@ -149,8 +150,8 @@ func loop(data *loopData) {
 		}
 	}
 
-	for _, animals := range data.animals {
-		totalCount[animals.GetType()] = animals.GetInternalIndex()
+	for _, creatures := range data.animals {
+		totalCount[creatures.Type()] = creatures.InternalIndex()
 	}
 
 	fmt.Println(
@@ -164,7 +165,7 @@ func loop(data *loopData) {
 }
 
 type loopData struct {
-	animals   []Animals
-	field     Field
+	animals   []animals.Animals
+	field     field.Field
 	time2Live int
 }

@@ -5,7 +5,7 @@ import "math/rand"
 const RabbitDefCount = 50
 const RabbitType = "rabbit"
 
-func NewRabbits(startCount int) Animals {
+func NewRabbits(startCount int) *animals {
 	return NewAnimals(startCount, newRabbit, RabbitType)
 }
 
@@ -17,7 +17,7 @@ func newRabbit() *animal {
 			stealth: 2,
 		},
 		typeOf: RabbitType,
-		sex:    rand.Intn(1) > 0,
+		sex:    rand.Intn(99) > 49,
 		age:    0,
 		breedAge: breedAge{
 			min: 1,

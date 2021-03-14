@@ -6,11 +6,12 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	. "rabbits_wolfs/animals"
-	. "rabbits_wolfs/field"
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	"rabbits_wolfs/animals"
+	"rabbits_wolfs/field"
 )
 
 const Epoch = 100
@@ -43,32 +44,32 @@ func main() {
 		data4Loop.time2Live = Epoch
 	}
 
-	fmt.Print("field size (", Size, "):")
+	fmt.Print("field size (", field.Size, "):")
 	var fieldSize int
 	fmt.Scanln(&fieldSize)
 	if fieldSize == 0 {
-		fieldSize = Size
+		fieldSize = field.Size
 	}
 	fmt.Println("field size'll be ", fieldSize, "x", fieldSize, "(", fieldSize*fieldSize, ")")
 
-	data4Loop.field = NewField(fieldSize)
+	data4Loop.field = field.NewField(fieldSize)
 
-	fmt.Print("Rabbits start count (", RabbitDefCount, "):")
+	fmt.Print("Rabbits start count (", animals.RabbitDefCount, "):")
 	var rabbitsCount int
 	fmt.Scanln(&rabbitsCount)
 	if rabbitsCount == 0 {
-		rabbitsCount = RabbitDefCount
+		rabbitsCount = animals.RabbitDefCount
 	}
 
-	fmt.Print("Wolfs start count (", WolfDefCount, "):")
+	fmt.Print("Wolfs start count (", animals.WolfDefCount, "):")
 	var wolfsCount int
 	fmt.Scanln(&wolfsCount)
 	if wolfsCount == 0 {
-		wolfsCount = WolfDefCount
+		wolfsCount = animals.WolfDefCount
 	}
 
 	rand.Seed(time.Now().UnixNano())
-	data4Loop.animals = []Animals{NewRabbits(rabbitsCount), NewWolfs(wolfsCount)}
+	data4Loop.animals = []animals.Animals{animals.NewRabbits(rabbitsCount), animals.NewWolfs(wolfsCount)}
 	start := time.Now()
 	loop(data4Loop)
 	fmt.Println(time.Since(start))
